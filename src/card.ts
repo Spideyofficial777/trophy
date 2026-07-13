@@ -1,19 +1,6 @@
-import {
-  Trophy,
-  TotalStarTrophy,
-  TotalCommitTrophy,
-  TotalFollowerTrophy,
-  TotalIssueTrophy,
-  TotalPullRequestTrophy,
-  TotalRepositoryTrophy,
-  MultipleLangTrophy,
-  LongTimeAccountTrophy,
-  AncientAccountTrophy,
-  Joined2020Trophy,
-  AllSuperRankTrophy,
-} from "./trophies.ts";
-import { UserInfo } from "./github_api_client.ts";
-import { RANK_ORDER, RANK } from "./utils.ts";
+import { UserInfo } from "./user_info.ts";
+import { TrophyList } from "./trophy_list.ts";
+import { Trophy } from "./trophy.ts";
 import { Theme } from "./theme.ts";
 
 export class Card {
@@ -30,74 +17,42 @@ export class Card {
     private noBackground: boolean,
     private noFrame: boolean,
   ) {
-    this.width = panelSize * this.maxColumn + this.marginWidth * (this.maxColumn - 1);
+    this.width = panelSize * this.maxColumn +
+      this.marginWidth * (this.maxColumn - 1);
   }
   render(
     userInfo: UserInfo,
     theme: Theme,
   ): string {
-    // Base trophies
-    let trophyList = new Array<Trophy>(
-      new TotalStarTrophy(userInfo.totalStargazers),
-      new TotalCommitTrophy(userInfo.totalCommits),
-      new TotalFollowerTrophy(userInfo.totalFollowers),
-      new TotalIssueTrophy(userInfo.totalIssues),
-      new TotalPullRequestTrophy(userInfo.totalPullRequests),
-      new TotalRepositoryTrophy(userInfo.totalRepositories),
-    );
-    const isAllSRank =
-      trophyList.every((trophy) => trophy.rank.slice(0, 1) == RANK.S) ? 1 : 0;
-    // Secret trophies
-    trophyList.push(
-      new MultipleLangTrophy(userInfo.languageCount),
-      new LongTimeAccountTrophy(userInfo.durationYear),
-      new AncientAccountTrophy(userInfo.ancientAccount),
-      new Joined2020Trophy(userInfo.joined2020),
-      new AllSuperRankTrophy(isAllSRank),
-    );
+    const trophyList = new TrophyList(userInfo);
 
-    // Filter by hidden
-    trophyList = trophyList.filter((trophy) =>
-      !trophy.hidden || trophy.rank !== RANK.UNKNOWN
-    );
+    trophyList.filterByHidden();
 
-    // Filter by titles
     if (this.titles.length != 0) {
-      trophyList = trophyList.filter((trophy) => {
-        return trophy.filterTitles.some((title) => this.titles.includes(title));
-      });
-    }
-
-    // Filter by ranks
-    if (this.ranks.length != 0) {
-      trophyList = trophyList.filter((trophy) =>
-        this.ranks.includes(trophy.rank)
+      const includeTitles = this.titles.filter((title) =>
+        !title.startsWith("-")
       );
+      if (includeTitles.length > 0) {
+        trophyList.filterByTitles(includeTitles);
+      }
+      trophyList.filterByExclusionTitles(this.titles);
     }
 
-    // Sort by rank
-    trophyList = trophyList.sort((a: Trophy, b: Trophy) =>
-      RANK_ORDER.indexOf(a.rank) - RANK_ORDER.indexOf(b.rank)
-    );
-
-    // Calculate the height of card from turns
-    let row = Math.floor((trophyList.length - 1) / this.maxColumn) + 1;
-    if (row > this.maxRow) {
-      row = this.maxRow;
+    if (this.ranks.length != 0) {
+      trophyList.filterByRanks(this.ranks);
     }
-    this.height = this.panelSize * row + this.marginHeight * (row - 1);
 
-    // Join all trophy
-    const renderedTrophy = trophyList.reduce(
-      (sum: string, trophy: Trophy, i: number) => {
-        const currentColumn = i % this.maxColumn;
-        const currentRow = Math.floor(i / this.maxColumn);
-        const x = this.panelSize * currentColumn + this.marginWidth * currentColumn;
-        const y = this.panelSize * currentRow + this.marginHeight * currentRow;
-        return sum + trophy.render(theme, x, y, this.panelSize, this.noBackground, this.noFrame);
-      },
-      "",
-    );
+    trophyList.sortByRank();
+
+    if (this.maxColumn == -1) {
+      this.maxColumn = trophyList.length;
+      this.width = this.panelSize * this.maxColumn +
+        this.marginWidth * (this.maxColumn - 1);
+    }
+
+    const row = this.getRow(trophyList);
+    this.height = this.getHeight(row);
+
     return `
     <svg
       width="${this.width}"
@@ -106,7 +61,40 @@ export class Card {
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
     >
-      ${renderedTrophy}
+      ${this.renderTrophy(trophyList, theme)}
     </svg>`;
+  }
+  private getRow(trophyList: TrophyList) {
+    let row = Math.floor((trophyList.length - 1) / this.maxColumn) + 1;
+    if (row > this.maxRow) {
+      row = this.maxRow;
+    }
+    return row;
+  }
+  private getHeight(row: number) {
+    // Calculate the height of the card from turns
+    return this.panelSize * row + this.marginHeight * (row - 1);
+  }
+
+  private renderTrophy(trophyList: TrophyList, theme: Theme) {
+    return trophyList.getArray.reduce(
+      (sum: string, trophy: Trophy, i: number) => {
+        const currentColumn = i % this.maxColumn;
+        const currentRow = Math.floor(i / this.maxColumn);
+        const x = this.panelSize * currentColumn +
+          this.marginWidth * currentColumn;
+        const y = this.panelSize * currentRow + this.marginHeight * currentRow;
+        return sum +
+          trophy.render(
+            theme,
+            x,
+            y,
+            this.panelSize,
+            this.noBackground,
+            this.noFrame,
+          );
+      },
+      "",
+    );
   }
 }

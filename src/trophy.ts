@@ -1,5 +1,5 @@
-import { getTrophyIcon, getNextRankBar } from "./icons.ts";
-import { CONSTANTS, RANK, abridgeScore, RANK_ORDER } from "./utils.ts";
+import { getNextRankBar, getTrophyIcon } from "./icons.ts";
+import { abridgeScore, CONSTANTS, RANK, RANK_ORDER } from "./utils.ts";
 import { Theme } from "./theme.ts";
 
 class RankCondition {
@@ -9,7 +9,6 @@ class RankCondition {
     readonly requiredScore: number,
   ) {}
 }
-
 
 export class Trophy {
   rankCondition: RankCondition | null = null;
@@ -27,7 +26,7 @@ export class Trophy {
     this.setRank();
   }
   setRank() {
-    const sortedRankConditions = this.rankConditions.sort((a, b) =>
+    const sortedRankConditions = this.rankConditions.toSorted((a, b) =>
       RANK_ORDER.indexOf(a.rank) - RANK_ORDER.indexOf(b.rank)
     );
     // Set the rank that hit the first condition
@@ -59,14 +58,16 @@ export class Trophy {
     const result = progress / distance;
     return result;
   }
-  render(theme: Theme,
+  render(
+    theme: Theme,
     x = 0,
     y = 0,
     panelSize = CONSTANTS.DEFAULT_PANEL_SIZE,
     noBackground = CONSTANTS.DEFAULT_NO_BACKGROUND,
     noFrame = CONSTANTS.DEFAULT_NO_FRAME,
   ): string {
-    const { BACKGROUND: PRIMARY, TITLE: SECONDARY, TEXT, NEXT_RANK_BAR } = theme;
+    const { BACKGROUND: PRIMARY, TITLE: SECONDARY, TEXT, NEXT_RANK_BAR } =
+      theme;
     const nextRankBar = getNextRankBar(
       this.title,
       this.calculateNextRankPercentage(),
@@ -90,8 +91,8 @@ export class Trophy {
             height="${panelSize - 1}"
             stroke="#e1e4e8"
             fill="${PRIMARY}"
-            stroke-opacity="${noFrame ? '0' : '1'}"
-            fill-opacity="${noBackground ? '0' : '1'}"
+            stroke-opacity="${noFrame ? "0" : "1"}"
+            fill-opacity="${noBackground ? "0" : "1"}"
           />
           ${getTrophyIcon(theme, this.rank)}
           <text x="50%" y="18" text-anchor="middle" font-family="Segoe UI,Helvetica,Arial,sans-serif,Apple Color Emoji,Segoe UI Emoji" font-weight="bold" font-size="13" fill="${SECONDARY}">${this.title}</text>
@@ -103,8 +104,8 @@ export class Trophy {
   }
 }
 
-export class MultipleLangTrophy extends Trophy{
-  constructor(score: number){
+export class MultipleLangTrophy extends Trophy {
+  constructor(score: number) {
     const rankConditions = [
       new RankCondition(
         RANK.SECRET,
@@ -119,8 +120,8 @@ export class MultipleLangTrophy extends Trophy{
   }
 }
 
-export class AllSuperRankTrophy extends Trophy{
-  constructor(score: number){
+export class AllSuperRankTrophy extends Trophy {
+  constructor(score: number) {
     const rankConditions = [
       new RankCondition(
         RANK.SECRET,
@@ -131,12 +132,12 @@ export class AllSuperRankTrophy extends Trophy{
     super(score, rankConditions);
     this.title = "AllSuperRank";
     this.filterTitles = ["AllSuperRank"];
-    this.bottomMessage = "All S Rank"
+    this.bottomMessage = "All S Rank";
     this.hidden = true;
   }
 }
-export class Joined2020Trophy extends Trophy{
-  constructor(score: number){
+export class Joined2020Trophy extends Trophy {
+  constructor(score: number) {
     const rankConditions = [
       new RankCondition(
         RANK.SECRET,
@@ -147,12 +148,12 @@ export class Joined2020Trophy extends Trophy{
     super(score, rankConditions);
     this.title = "Joined2020";
     this.filterTitles = ["Joined2020"];
-    this.bottomMessage = "Joined 2020"
+    this.bottomMessage = "Joined 2020";
     this.hidden = true;
   }
 }
-export class AncientAccountTrophy extends Trophy{
-  constructor(score: number){
+export class AncientAccountTrophy extends Trophy {
+  constructor(score: number) {
     const rankConditions = [
       new RankCondition(
         RANK.SECRET,
@@ -163,12 +164,12 @@ export class AncientAccountTrophy extends Trophy{
     super(score, rankConditions);
     this.title = "AncientUser";
     this.filterTitles = ["AncientUser"];
-    this.bottomMessage = "Before 2010"
+    this.bottomMessage = "Before 2010";
     this.hidden = true;
   }
 }
-export class LongTimeAccountTrophy extends Trophy{
-  constructor(score: number){
+export class LongTimeAccountTrophy extends Trophy {
+  constructor(score: number) {
     const rankConditions = [
       new RankCondition(
         RANK.SECRET,
@@ -180,6 +181,139 @@ export class LongTimeAccountTrophy extends Trophy{
     this.title = "LongTimeUser";
     this.filterTitles = ["LongTimeUser"];
     this.hidden = true;
+  }
+}
+export class MultipleOrganizationsTrophy extends Trophy {
+  constructor(score: number) {
+    const rankConditions = [
+      new RankCondition(
+        RANK.SECRET,
+        // or if this doesn't render well: "Factorum"
+        "Jack of all Trades",
+        3,
+      ),
+    ];
+    super(score, rankConditions);
+    this.title = "Organizations";
+    this.filterTitles = ["Organizations", "Orgs", "Teams"];
+    this.hidden = true;
+  }
+}
+
+export class OGAccountTrophy extends Trophy {
+  constructor(score: number) {
+    const rankConditions = [
+      new RankCondition(
+        RANK.SECRET,
+        "OG User",
+        1,
+      ),
+    ];
+    super(score, rankConditions);
+    this.title = "OGUser";
+    this.filterTitles = ["OGUser"];
+    this.bottomMessage = "Joined 2008";
+    this.hidden = true;
+  }
+}
+
+export class TotalReviewsTrophy extends Trophy {
+  constructor(score: number) {
+    const rankConditions = [
+      new RankCondition(
+        RANK.SSS,
+        "God Reviewer",
+        70,
+      ),
+      new RankCondition(
+        RANK.SS,
+        "Deep Reviewer",
+        57,
+      ),
+      new RankCondition(
+        RANK.S,
+        "Super Reviewer",
+        45,
+      ),
+      new RankCondition(
+        RANK.AAA,
+        "Ultra Reviewer",
+        30,
+      ),
+      new RankCondition(
+        RANK.AA,
+        "Hyper Reviewer",
+        20,
+      ),
+      new RankCondition(
+        RANK.A,
+        "Active Reviewer",
+        8,
+      ),
+      new RankCondition(
+        RANK.B,
+        "Intermediate Reviewer",
+        3,
+      ),
+      new RankCondition(
+        RANK.C,
+        "New Reviewer",
+        1,
+      ),
+    ];
+    super(score, rankConditions);
+    this.title = "Reviews";
+    this.filterTitles = ["Review", "Reviews"];
+  }
+}
+
+export class AccountDurationTrophy extends Trophy {
+  constructor(score: number) {
+    const rankConditions = [
+      new RankCondition(
+        RANK.SSS,
+        "Seasoned Veteran",
+        70, // 20 years
+      ),
+      new RankCondition(
+        RANK.SS,
+        "Grandmaster",
+        55, // 15 years
+      ),
+      new RankCondition(
+        RANK.S,
+        "Master Dev",
+        40, // 10 years
+      ),
+      new RankCondition(
+        RANK.AAA,
+        "Expert Dev",
+        28, // 7.5 years
+      ),
+      new RankCondition(
+        RANK.AA,
+        "Experienced Dev",
+        18, // 5 years
+      ),
+      new RankCondition(
+        RANK.A,
+        "Intermediate Dev",
+        11, // 3 years
+      ),
+      new RankCondition(
+        RANK.B,
+        "Junior Dev",
+        6, // 1.5 years
+      ),
+      new RankCondition(
+        RANK.C,
+        "Newbie",
+        2, // 0.5 year
+      ),
+    ];
+    super(score, rankConditions);
+    this.title = "Experience";
+    this.filterTitles = ["Experience", "Duration", "Since"];
   }
 }
 
@@ -213,7 +347,7 @@ export class TotalStarTrophy extends Trophy {
       ),
       new RankCondition(
         RANK.A,
-        "You are Star",
+        "You are a Star",
         30,
       ),
       new RankCondition(
@@ -278,8 +412,8 @@ export class TotalCommitTrophy extends Trophy {
       ),
     ];
     super(score, rankConditions);
-    this.title = "Commit";
-    this.filterTitles = ["Commit"];
+    this.title = "Commits";
+    this.filterTitles = ["Commit", "Commits"];
   }
 }
 
@@ -388,48 +522,48 @@ export class TotalPullRequestTrophy extends Trophy {
     const rankConditions = [
       new RankCondition(
         RANK.SSS,
-        "God PR User",
+        "God Puller",
         1000,
       ),
       new RankCondition(
         RANK.SS,
-        "Deep PR User",
+        "Deep Puller",
         500,
       ),
       new RankCondition(
         RANK.S,
-        "Super PR User",
+        "Super Puller",
         200,
       ),
       new RankCondition(
         RANK.AAA,
-        "Ultra PR User",
+        "Ultra Puller",
         100,
       ),
       new RankCondition(
         RANK.AA,
-        "Hyper PR User",
+        "Hyper Puller",
         50,
       ),
       new RankCondition(
         RANK.A,
-        "High PR User",
+        "High Puller",
         20,
       ),
       new RankCondition(
         RANK.B,
-        "Middle PR User",
+        "Middle Puller",
         10,
       ),
       new RankCondition(
         RANK.C,
-        "First PR",
+        "First Pull",
         1,
       ),
     ];
     super(score, rankConditions);
     this.title = "PullRequest";
-    this.filterTitles = ["PR", "PullRequest"];
+    this.filterTitles = ["PR", "PullRequest", "Pulls", "Puller"];
   }
 }
 
@@ -439,22 +573,22 @@ export class TotalRepositoryTrophy extends Trophy {
       new RankCondition(
         RANK.SSS,
         "God Repo Creator",
-        100,
+        50,
       ),
       new RankCondition(
         RANK.SS,
         "Deep Repo Creator",
-        90,
+        45,
       ),
       new RankCondition(
         RANK.S,
         "Super Repo Creator",
-        80,
+        40,
       ),
       new RankCondition(
         RANK.AAA,
         "Ultra Repo Creator",
-        50,
+        35,
       ),
       new RankCondition(
         RANK.AA,

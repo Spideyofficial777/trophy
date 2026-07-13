@@ -1,11 +1,4 @@
-import { ServerRequest } from ".././deps.ts";
-
 export class CustomURLSearchParams extends URLSearchParams {
-  constructor(
-    init?: string[][] | Record<string, string> | string | URLSearchParams,
-  ) {
-    super(init);
-  }
   getStringValue(key: string, defaultValue: string): string {
     if (super.has(key)) {
       const param = super.get(key);
@@ -31,13 +24,13 @@ export class CustomURLSearchParams extends URLSearchParams {
   getBooleanValue(key: string, defaultValue: boolean): boolean {
     if (super.has(key)) {
       const param = super.get(key);
-      return param !== null && param.toString() === 'true';
+      return param !== null && param.toString() === "true";
     }
     return defaultValue;
   }
 }
 
-export function parseParams(req: ServerRequest): CustomURLSearchParams {
+export function parseParams(req: Request): CustomURLSearchParams {
   const splittedURL = req.url.split("?");
   if (splittedURL.length < 2) {
     return new CustomURLSearchParams();
@@ -55,15 +48,23 @@ export function abridgeScore(score: number): string {
   return (Math.sign(score) * Math.abs(score)).toString() + "pt";
 }
 
+const HOUR_IN_MILLISECONDS = 60 * 60 * 1000;
+
 export const CONSTANTS = {
-  CACHE_MAX_AGE: 7200,
+  CACHE_MAX_AGE: 18800,
+  CDN_CACHE_MAX_AGE: 28800, // 8 hours for CDN edge cache
+  STALE_WHILE_REVALIDATE: 86400, // 24 hours - serve stale while revalidating
   DEFAULT_PANEL_SIZE: 110,
-  DEFAULT_MAX_COLUMN: 6,
+  DEFAULT_MAX_COLUMN: 8,
   DEFAULT_MAX_ROW: 3,
   DEFAULT_MARGIN_W: 0,
   DEFAULT_MARGIN_H: 0,
   DEFAULT_NO_BACKGROUND: false,
   DEFAULT_NO_FRAME: false,
+  DEFAULT_GITHUB_API: "https://api.github.com/graphql",
+  DEFAULT_GITHUB_RETRY_DELAY: 500,
+  REVALIDATE_TIME: HOUR_IN_MILLISECONDS,
+  REDIS_TTL: HOUR_IN_MILLISECONDS * 4,
 };
 
 export enum RANK {
